@@ -1,28 +1,38 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 
+void main() {
+  runApp(VirtualAquariumApp());
+}
+
+class VirtualAquariumApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Virtual Aquarium',
+      home: VirtualAquarium(),
+    );
+  }
+}
+
 class Fish {
   Color color;
   double speed;
   Offset position;
   double dx;
   double dy;
-  double size;
-  bool scaling;
 
   Fish({required this.color, required this.speed})
       : dx = (Random().nextDouble() - 0.5) * speed,
         dy = (Random().nextDouble() - 0.5) * speed,
-        position = const Offset(150, 150),
-        size = 1.0,
-        scaling = true;
+        position = Offset(150, 150);
 
   Widget buildFish() {
     return Positioned(
       left: position.dx,
       top: position.dy,
       child: CustomPaint(
-        size: Size(50 * size, 30 * size),
+        size: Size(50, 30),
         painter: FishPainter(color: color),
       ),
     );
@@ -72,18 +82,17 @@ class FishPainter extends CustomPainter {
     return false;
   }
 }
+
 class VirtualAquarium extends StatefulWidget {
   @override
   _VirtualAquariumState createState() => _VirtualAquariumState();
 }
 
-class _VirtualAquariumState extends State<VirtualAquarium>
-    with SingleTickerProviderStateMixin {
+class _VirtualAquariumState extends State<VirtualAquarium> with SingleTickerProviderStateMixin {
   List<Fish> fishList = [];
   double selectedSpeed = 1.0;
   Color selectedColor = Colors.blue;
   late AnimationController _controller;
-  bool collisionEnabled = true;
 
   @override
   void initState() {
@@ -102,14 +111,6 @@ class _VirtualAquariumState extends State<VirtualAquarium>
       fish.moveFish();
     }
     setState(() {});
-  }
-
-  void _addFish() {
-    if (fishList.length < 10) {
-      setState(() {
-        fishList.add(Fish(color: selectedColor, speed: selectedSpeed));
-      });
-    }
   }
 
   @override
@@ -137,7 +138,49 @@ class _VirtualAquariumState extends State<VirtualAquarium>
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ElevatedButton(onPressed: _addFish, child: Text('Add Fish')),
+              ElevatedButton(
+                onPressed: () {
+                  if (fishList.length < 10) {
+                    setState(() {
+                      fishList.add(Fish(color: selectedColor, speed: selectedSpeed));
+                    });
+                  }
+                },
+                child: Text('Add Fish'),
+              ),
+              SizedBox(width: 10),
+              DropdownButton<Color>(
+                value: selectedColor,
+                onChanged: (newColor) {
+                  setState(() {
+                    selectedColor = newColor!;
+                  });
+                },
+                items: [
+                  DropdownMenuItem(value: Colors.red, child: Text('Red')),
+                  DropdownMenuItem(value: Colors.blue, child: Text('Blue')),
+                  DropdownMenuItem(value: Colors.green, child: Text('Green')),
+                ],
+              ),
+            ],
+          ),
+          SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Speed: ${selectedSpeed.toStringAsFixed(1)}x'),
+              Slider(
+                value: selectedSpeed,
+                onChanged: (newSpeed) {
+                  setState(() {
+                    selectedSpeed = newSpeed;
+                  });
+                },
+                min: 1.0,
+                max: 5.0,
+                divisions: 10,
+                label: '${selectedSpeed.toStringAsFixed(1)}x Speed',
+              ),
             ],
           ),
         ],
