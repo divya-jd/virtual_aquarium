@@ -72,3 +72,82 @@ class FishPainter extends CustomPainter {
     return false;
   }
 }
+class VirtualAquarium extends StatefulWidget {
+  @override
+  _VirtualAquariumState createState() => _VirtualAquariumState();
+}
+
+class _VirtualAquariumState extends State<VirtualAquarium>
+    with SingleTickerProviderStateMixin {
+  List<Fish> fishList = [];
+  double selectedSpeed = 1.0;
+  Color selectedColor = Colors.blue;
+  late AnimationController _controller;
+  bool collisionEnabled = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..addListener(() {
+        _moveFish();
+      });
+    _controller.repeat();
+  }
+
+  void _moveFish() {
+    for (Fish fish in fishList) {
+      fish.moveFish();
+    }
+    setState(() {});
+  }
+
+  void _addFish() {
+    if (fishList.length < 10) {
+      setState(() {
+        fishList.add(Fish(color: selectedColor, speed: selectedSpeed));
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Virtual Aquarium'),
+      ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 300,
+            height: 300,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.blueAccent),
+              color: Colors.lightBlue[100],
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Stack(
+              children: fishList.map((fish) => fish.buildFish()).toList(),
+            ),
+          ),
+          SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(onPressed: _addFish, child: Text('Add Fish')),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
